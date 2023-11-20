@@ -1,3 +1,9 @@
 from django.shortcuts import render
 
-# Create your views here.
+# view ----- INDEX
+def index(request):
+    return render(
+        request,
+        'contact/index.html',
+    )
+# view ----- INDEX
