@@ -3,6 +3,8 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User # Módulo owner do próprio Djando
 
+
+
 class Category(models.Model):
     class Meta:
         verbose_name = 'Category'
@@ -12,6 +14,8 @@ class Category(models.Model):
 
     def __str__(self) -> str:
         return self.name
+
+
 
 class Contact(models.Model):
     first_name = models.CharField(max_length=50)

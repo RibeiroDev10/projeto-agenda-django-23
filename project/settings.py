@@ -134,3 +134,10 @@ MEDIA_ROOT = BASE_DIR / 'media' # pasta em que ficará todas as midias, definimo
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# Importando o arquivo local_settings.py no final, para sobescrever as variáveis desse arquivo aqui.
+try:
+    from project.local_settings import *  # De local_settings importe tudo que tem lá.
+except ImportError:
+    ...
