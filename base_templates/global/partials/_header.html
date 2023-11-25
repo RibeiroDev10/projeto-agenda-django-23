@@ -27,8 +27,9 @@
             class="search-input"
             placeholder="Search"
             id="search"
-            name="q"       
-            >
+            name="q"
+            value="{{ request.GET.q.strip }}"
+            > <!-- Pegando o que foi buscado, e setando o o valor dessa busca, no VALUE do INPUT.-->
         </form>
     </div>
 </header>

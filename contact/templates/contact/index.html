@@ -10,60 +10,56 @@
     Entao, basicamente, neste index temos o conteudo, e enviamos esse conteúdo para o arquivo usado de base
     Que está localizado em: ./base_templates/global/base.html
 -->
-{% block content %}
-<div class="responsive-table">
+{% block content %} 
+{% if page_obj %} <!-- Se existir a variavel contacts... Renderiza o HTML -->
+    <div class="responsive-table">
     <table class="contacts-table">
         <caption class="table-caption">
-            Contacts
+        Contacts
         </caption>
-
-        <thead>
-            <tr class="table-row table-row-header">
-                <th class="table-header">ID</th>
-                <th class="table-header">First Name</th>
-                <th class="table-header">Last Name</th>
-                <th class="table-header">Phone</th>
-                <th class="table-header">E-mail</th>
-            </tr>
-        </thead>
-        <!--
+    <thead>
+      <tr class="table-row table-row-header">
+        <th class="table-header">ID</th>
+        <th class="table-header">First Name</th>
+        <th class="table-header">Last Name</th>
+        <th class="table-header">Phone</th>
+        <th class="table-header">E-mail</th>
+      </tr>
+    </thead>
+    <!--
             As <td> tem que bater com as <th>
             Ou seja, se tem 5 <th>, tem que ter 5 <td>
         -->
-        <tbody>
-            {% for contact in contacts %}
-                <tr class="table-row">
-                    <td class="table-cel">
-                        <a 
-                            class="table-link"
-                            href="{% url 'contact:contact' contact.id %}"> 
-                            {{ contact.id }}
-                        </a>
-                    </td>
-                    <td class="table-cel">
-                        <a href="#" class="table-link">
-                            {{contact.first_name}}
-                        </a>
-                    </td>
-                    <td class="table-cel">
-                        <a href="#" class="table-link">
-                            {{contact.last_name}}
-                        </a>
-                    </td>
-                    <td class="table-cel">
-                        <a href="#" class="table-link">
-                            {{contact.phone}}
-                        </a>
-                    </td>
-                    <td class="table-cel">
-                        <a href="#" class="table-link">
-                            {{contact.email}}
-                        </a>
-                    </td>
-                </tr>
-            {% endfor %}
-        </tbody>
-
-    </table>
+    <tbody>
+      {% for contact in page_obj %}
+      <tr class="table-row">
+        <td class="table-cel">
+          <a class="table-link" href="{% url 'contact:contact' contact.id %}">
+            {{ contact.id }}
+          </a>
+        </td>
+        <td class="table-cel">
+          <a href="#" class="table-link"> {{contact.first_name}} </a>
+        </td>
+        <td class="table-cel">
+          <a href="#" class="table-link"> {{contact.last_name}} </a>
+        </td>
+        <td class="table-cel">
+          <a href="#" class="table-link"> {{contact.phone}} </a>
+        </td>
+        <td class="table-cel">
+          <a href="#" class="table-link"> {{contact.email}} </a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 </div>
+{% else %} <!-- Se nao existir a variavel contacts...-->
+<div class="single-contact">
+    <h1 class="single-contact-name">
+        Nenhum contato encontrado.
+    </h1>
+</div>
+{% endif %} <!-- TERMINANDO O IF/ELSE DE 'contacts'-->
 {% endblock content %}

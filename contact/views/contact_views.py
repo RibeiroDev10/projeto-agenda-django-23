@@ -1,15 +1,21 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Q  # Possibilita fazer o uso de PIPE no filter() quando se usa icontains por ex...
 from contact.models import Contact
+from django.core.paginator import Paginator
 
-# view -------------------- INDEX
+
 def index(request):
                # Para trazer todos os contatos da base de dados (Model - Contact).
                # Estamos utilizando também, um fitro/query para essa busca no Model.
-    contacts = Contact.objects.all().filter(show=True).order_by('-id')[:5]
+    contacts = Contact.objects.all().filter(show=True).order_by('-id')
+
+    paginator = Paginator(contacts, 5)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
 
     context = {
         'contacts': contacts,
+        'page_obj': page_obj,
         'site_title': 'Contatos - '
     }
 
@@ -18,9 +24,8 @@ def index(request):
         'contact/index.html',
         context
     )
-# view -------------------- INDEX
 
-# view -------------------- CONTACT
+
 def contact(request, contact_id):
     # single_contact = Contact.objects.filter(pk=contact_id).first()
     single_contact = get_object_or_404(
@@ -38,7 +43,7 @@ def contact(request, contact_id):
         'contact/contact.html',
         context
     )
-# view -------------------- CONTACT
+
 
 def search(request):
     search_value = request.GET.get('q', '').strip()
@@ -56,9 +61,15 @@ def search(request):
                ) \
                .order_by('-id')
     
+    paginator = Paginator(contacts, 5)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
     context = {
         'contacts': contacts,
-        'site_title': 'Search - '
+        'page_obj': page_obj,
+        'site_title': 'Search - ',
+        'search_value': search_value
     }
 
     return render(
