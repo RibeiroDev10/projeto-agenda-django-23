@@ -2,9 +2,14 @@
 {% block content %}
   <div class="form-wrapper">
     <h2>Contact</h2>
-    
-    <form 
-      action="{% url 'contact:create' %}"
+
+          <!--
+            Aqui passa a ser uma URL dinamica,
+            recebemos a URL através da variável passada no contexto da view
+            variável = form_action - passada através do contexto da view.
+          -->
+    <form
+      action="{{ form_action }}"
       method="POST"
       enctype="multipart/form-data"
     >
@@ -17,6 +22,10 @@
             <label for="{{ field.id_for_label }}">{{ field.label }}</label>
             {{ field }}
             {{ field.errors }}
+
+            {% if field.help_text %}
+              <p class="help-text">{{ field.help_text }}</p>
+            {% endif %}
           </div>
         {% endfor %}
 
