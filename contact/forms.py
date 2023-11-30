@@ -1,6 +1,9 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from . import models
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
+from django.contrib.auth import password_validation
 
 from contact.models import Contact
 
@@ -12,29 +15,21 @@ from contact.models import Contact
     configuração correta da classe derivada.
 """
 class ContactForm(forms.ModelForm):
-    first_name = forms.CharField(
-        widget=forms.TextInput(
+    picture = forms.ImageField(
+        widget=forms.FileInput(
             attrs={
-                'class': 'classe-a classe-b',
-                'placeholder': 'Aqui veio do init',
+                'accept': 'image/*'
             }
         ),
-        label='Primeiro Nome',
-        help_text='Texto de ajuda para seu usuário',
+        required=False,
     )
-
-    # Chama o método init da classe base (forms.ModelForm)
-    # Prática comum quando estendemos uma classe e,
-    # Precisamos garantir que a inicialização da classe base seja executada antes da inicialização da classe derivada.
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
 
     class Meta:
         model = Contact
         fields = (
             'first_name', 'last_name', 'phone',
             'email', 'discriptin', 'category',
+            'picture'
         )
     
     # Pegando campos do formulário de Contato e adicionando validação em cima desses campos
@@ -72,3 +67,142 @@ class ContactForm(forms.ModelForm):
             )
 
         return first_name
+
+
+class RegisterForm(UserCreationForm):
+
+    # Definimos os campos do model
+    first_name = forms.CharField(
+        required=True,
+        min_length=3,
+    )
+    last_name = forms.CharField(
+        required=True,
+        min_length=3,
+    )
+    email = forms.EmailField()
+
+    # Definimos os campos que aparecerão no formulário
+    class Meta:
+        model = User
+        fields = (
+            'first_name', 'last_name', 'email',
+            'username', 'password1', 'password2'
+        )
+
+    # Verifica se já existe um usuário no banco de dados com o mesmo endereço de e-mail fornecido
+    def clean_email(self):
+        # Usado para obter o valor do campo 'email' após a validação e limpeza
+        email = self.cleaned_data.get('email') # usada para recuperar o valor associado ao campo 'email' após a validação e limpeza dos dados do formulário.
+
+        if User.objects.filter(email=email).exists():
+            self.add_error(
+                'email', # Campo do form que receberá o erro personalizado
+                ValidationError('Já existe este e-mail', code='invalid') # Mensagem personalizada do erro
+            )
+        return email
+
+
+class RegisterUpdateForm(forms.ModelForm):
+    fisrt_name = forms.CharField(
+        min_length=2,
+        max_length=30,
+        required=True,
+        help_text='Required. ',
+        error_messages={
+            'min_length': 'Please, add more than 2 letters'
+        }
+    )
+    last_name = forms.CharField(
+        min_length=2,
+        max_length=30,
+        required=True,
+        help_text='Required. '
+    )
+
+    password1 = forms.CharField(
+        label="Password",
+        strip=False,
+        widget=forms.PasswordInput(attrs={"autocomplete": "new-password"}), # Tipo de input, definindo atributos CSS.
+        help_text=password_validation.password_validators_help_text_html(),
+        required=False,
+    )
+
+    password2 = forms.CharField(
+        label="Password 2",
+        strip=False,
+        widget=forms.PasswordInput(attrs={"autocomplete": "new-password"}),
+        help_text='Use the same password as before.',
+        required=False,
+    )
+
+    class Meta:
+        model = User
+        fields = (
+            'first_name', 'last_name', 'email',
+            'username',
+        )
+
+
+    def save(self, commit=True):
+        # Após a validação e limpeza bem-sucedidas, o resultado é armazenado no atributo cleaned_data do formulário. 
+        # Este é um dicionário onde as chaves são os nomes dos campos do formulário e 
+        # Os valores são os dados limpos associados a esses campos.
+        cleaned_data = self.cleaned_data
+        user = super().clean(commit=False) # O argumento commit=False indica que a limpeza deve ser realizada sem salvar os dados no banco de dados.
+        password = cleaned_data.get('password1')
+
+        if password:
+            # Setando um password criptografado, com base no primeiro password passado
+            user.set_password(password)
+        
+        if commit:
+            user.save()
+
+        return user
+    
+
+    def clean(self):
+        password1 = self.cleaned_data.get('password1')
+        password2 = self.cleaned_data.get('password2')
+
+        if password1 or password2:
+            if password1 != password2:
+                self.add_error(
+                    'password2', # Definindo em qual campo do FORM vai aparecer o erro.
+                    ValidationError('Senhas não batem')
+                )
+
+        # Garantindo que a lógica de validação padrão também seja aplicada.
+        return super().clean()
+    
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        current_email = self.instance.email  # Pegando o e-mail atual
+
+        # Validando se já existe um mesmo e-mail
+        if current_email != email:
+            if User.objects.filter(email=email).exists():
+                self.add_error(
+                    'email',
+                    ValidationError('Já existe este e-mail', code='invalid')
+                )
+
+        return email
+    
+
+    def clean_password1(self):
+        password1 = self.cleaned_data.get('password1')
+
+        # Verificando se aquele password passado no input do FORM, é valido.
+        if password1:
+            try:
+                password_validation.validate_password(password1)
+            except ValidationError as errors:
+                self.add_error(
+                    'password1',
+                    ValidationError(errors)
+                )
+
+        return password1
